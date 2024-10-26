@@ -46,9 +46,38 @@ def apply_clothing(image, parsing, part, color, saturation=1.0):
 # File path to demo image
 DEMO_IMAGE = 'image/116.jpg'
 
+# Custom CSS for gradient title, sidebar, and footer styling
+st.markdown("""
+    <style>
+        .app-title {
+            font-size: 3em;
+            text-align: center;
+            color: #fff;
+            background: linear-gradient(90deg, #FF7F50, #FF4500, #FFD700);
+            padding: 0.5em;
+            border-radius: 10px;
+            margin-bottom: 1em;
+        }
+        .sidebar .sidebar-content {
+            background-color: #FAEBD7;
+            padding: 1em;
+            border-radius: 10px;
+        }
+        .sidebar .stTitle {
+            color: #FF6347;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # App title and layout styling
 st.set_page_config(page_title='Virtual Makeup App', layout='wide')
-st.title('🌟 Virtual Makeup App 🌟')
+st.markdown('<div class="app-title">🌟 Virtual Makeup App 🌟</div>', unsafe_allow_html=True)
 st.sidebar.title('🎨 Style Parameters')
 st.sidebar.subheader('Choose your colors and adjust the saturation.')
 
@@ -60,6 +89,8 @@ table = {
     'left_eyebrow': 2,
     'right_eyebrow': 3,
     'nose_face_neck': [10, 1, 14],  # Grouped parts for face
+    'blush': [5, 6],  # Assuming left and right cheeks
+    'foundation': [1, 10, 14]  # Whole face and neck
 }
 
 # Suitable colors for each part (using color names)
@@ -87,6 +118,15 @@ color_options = {
         ('Caramel', '#AA7D4D'), ('Deep Tan', '#7A4B35'), ('Mocha', '#4E3B31'),
         ('Espresso', '#3B2A24') 
     ],
+    'blush': [
+        ('Soft Pink', '#FFC0CB'), ('Peach', '#FFE5B4'), ('Rosy Red', '#FF6347'),
+        ('Mauve', '#D8BFD8'), ('Deep Rose', '#C71585')
+    ],
+    'foundation': [
+        ('Porcelain', '#FBE7D8'), ('Fair', '#F0D6C6'), ('Light Beige', '#E2B5A8'),
+        ('Medium Beige', '#D1A57C'), ('Olive', '#BDA56D'), ('Tan', '#C89D68'),
+        ('Caramel', '#AA7D4D')
+    ]
 }
 
 # Image upload option
@@ -113,31 +153,30 @@ hair_color_name, hair_color_hex = st.sidebar.selectbox("Select Hair Color", colo
 lip_color_name, lip_color_hex = st.sidebar.selectbox("Select Lip Color", color_options['lip'], format_func=lambda x: x[0])
 eyebrow_color_name, eyebrow_color_hex = st.sidebar.selectbox("Select Eyebrow Color", color_options['eyebrow'], format_func=lambda x: x[0])
 nose_face_neck_color_name, nose_face_neck_color_hex = st.sidebar.selectbox("Select Nose, Face, and Neck Color", color_options['nose_face_neck'], format_func=lambda x: x[0])
+blush_color_name, blush_color_hex = st.sidebar.selectbox("Select Blush Color", color_options['blush'], format_func=lambda x: x[0])
+foundation_color_name, foundation_color_hex = st.sidebar.selectbox("Select Foundation Color", color_options['foundation'], format_func=lambda x: x[0])
 
 # Saturation adjustments
 hair_saturation = st.sidebar.slider("Hair Saturation", 0.5, 2.0, 1.0)
 lip_saturation = st.sidebar.slider("Lip Saturation", 0.5, 2.0, 1.0)
 eyebrow_saturation = st.sidebar.slider("Eyebrow Saturation", 0.5, 2.0, 1.0)
 nose_face_neck_saturation = st.sidebar.slider("Nose, Face, and Neck Saturation", 0.5, 2.0, 1.0)
+blush_saturation = st.sidebar.slider("Blush Saturation", 0.5, 2.0, 1.0)
+foundation_saturation = st.sidebar.slider("Foundation Saturation", 0.5, 2.0, 1.0)
 
 # Convert color codes to RGB format
 hair_color = ImageColor.getcolor(hair_color_hex, "RGB")
 lip_color = ImageColor.getcolor(lip_color_hex, "RGB")
 eyebrow_color = ImageColor.getcolor(eyebrow_color_hex, "RGB")
 nose_face_neck_color = ImageColor.getcolor(nose_face_neck_color_hex, "RGB")
+blush_color = ImageColor.getcolor(blush_color_hex, "RGB")
+foundation_color = ImageColor.getcolor(foundation_color_hex, "RGB")
 
-# Assigning colors and saturation to parts
-colors = [
-    hair_color, lip_color, lip_color, eyebrow_color,
-    eyebrow_color, nose_face_neck_color
-]
+# Colors and saturation values
+colors = [hair_color, lip_color, lip_color, eyebrow_color, eyebrow_color, nose_face_neck_color, blush_color, foundation_color]
+saturation = [hair_saturation, lip_saturation, lip_saturation, eyebrow_saturation, eyebrow_saturation, nose_face_neck_saturation, blush_saturation, foundation_saturation]
 
-saturation = [
-    hair_saturation, lip_saturation, lip_saturation, eyebrow_saturation,
-    eyebrow_saturation, nose_face_neck_saturation
-]
-
-# Applying makeup changes
+# Apply the colors for each part
 for part, color, saturate in zip(table.values(), colors, saturation):
     if isinstance(part, list):
         for p in part:
@@ -145,19 +184,5 @@ for part, color, saturate in zip(table.values(), colors, saturation):
     else:
         image = apply_clothing(image, parsing, part, color, saturate)
 
-# Resize images back to original size
-styled_image = cv2.resize(image, (w, h))
-original_image = cv2.resize(np.array(Image.open(demo_image)), (w, h))
-
-# Output images side by side
-st.subheader('✨ Styled Output Image ✨')
-col1, col2 = st.columns(2)
-with col1:
-    st.subheader('🖼️ Original Image')
-    st.image(original_image, use_column_width=True)
-with col2:
-    st.subheader('🖼️ Styled Image')
-    st.image(styled_image, use_column_width=True)
-
-# Footer
-st.markdown('<footer style="text-align: center; margin-top: 20px; font-size: 14px; color: #555;">Created with ❤️ by [Your Name]</footer>', unsafe_allow_html=True)
+# Display the final image
+st.image(image, caption="Styled Image with Blush and Foundation", use_column_width=True)
