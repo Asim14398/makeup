@@ -62,22 +62,32 @@ table = {
     'nose_face_neck': [10, 1, 14],  # Grouped parts for face
 }
 
-# Suitable colors for each part
+# Expanded color options for various parts
 color_options = {
-    'hair': ['#000000', '#6A4C93', '#FF6F61', '#F9D74D', '#A7C5EB'],  # Black, Purple, Coral, Yellow, Light Blue
-    'lip': ['#EDBAD1', '#E3B9C1', '#FF6F61', '#E34D4D', '#D9A39A'],  # Pinkish shades
-    'eyebrow': ['#3C2B1F', '#5D473A', '#6A4C93', '#000000', '#4F3A3C'],  # Brownish and Black
-    'nose_face_neck': ['#F5C6A5', '#EED6D7', '#E3B9C1', '#DABBA5', '#F1E6D4'],  # Skin tones
+    'hair': [
+        ('Black', '#000000'), ('Dark Purple', '#6A4C93'), ('Coral', '#FF6F61'),
+        ('Yellow', '#F9D74D'), ('Light Blue', '#A7C5EB'), ('Brown', '#8B4513'),
+        ('Chocolate', '#D2691E'), ('Orange', '#FF4500'), ('Medium Violet Red', '#C71585'),
+        ('Gold', '#FFD700')
+    ],
+    'lip': [
+        ('Light Pink', '#EDBAD1'), ('Rosy Pink', '#E3B9C1'), ('Coral Red', '#FF6F61'),
+        ('Red', '#E34D4D'), ('Tan', '#D9A39A'), ('Pale Pink', '#FFB6C1'),
+        ('Hot Pink', '#FF69B4'), ('Pale Violet Red', '#DB7093'), ('Firebrick', '#B22222'),
+        ('Indian Red', '#CD5C5C')
+    ],
+    'eyebrow': [
+        ('Dark Brown', '#3C2B1F'), ('Medium Brown', '#5D473A'), ('Purple Brown', '#6A4C93'),
+        ('Black', '#000000'), ('Dark Gray', '#4F3A3C'), ('Saddle Brown', '#8B4513'),
+        ('Brown', '#A52A2A'), ('Chocolate', '#D2691E'), ('Dark Slate Gray', '#2F4F4F')
+    ],
+    'nose_face_neck': [
+      ('Porcelain', '#FBE7D8'), ('Fair', '#F0D6C6'), ('Light Beige', '#E2B5A8'),
+        ('Medium Beige', '#D1A57C'), ('Olive', '#BDA56D'), ('Tan', '#C89D68'),
+        ('Caramel', '#AA7D4D'), ('Deep Tan', '#7A4B35'), ('Mocha', '#4E3B31'),
+        ('Espresso', '#3B2A24'), ('Ebony', '#2C1B15')
+    ],
 }
-
-# Color palette function
-def color_palette(colors):
-    cols = st.sidebar.columns(len(colors))
-    selected_color = None
-    for col, color in zip(cols, colors):
-        if col.button('', key=color, style=f"background-color: {color}; width: 50px; height: 50px;"):
-            selected_color = ImageColor.getcolor(color, "RGB")
-    return selected_color
 
 # Image upload option
 img_file_buffer = st.sidebar.file_uploader("Upload an image", type=["jpg", "jpeg", 'png'])
@@ -98,17 +108,23 @@ cp = 'cp/79999_iter.pth'
 parsing = evaluate(demo_image, cp)
 parsing = cv2.resize(parsing, image.shape[0:2], interpolation=cv2.INTER_NEAREST)
 
-# Use color_palette function for each makeup part
-hair_color = color_palette(color_options['hair']) or (0, 0, 0)  # Default to black if no color is selected
-lip_color = color_palette(color_options['lip']) or (237, 189, 209)  # Default to a light pink
-eyebrow_color = color_palette(color_options['eyebrow']) or (60, 43, 31)  # Default to brown
-nose_face_neck_color = color_palette(color_options['nose_face_neck']) or (245, 198, 165)  # Default to a skin tone
+# Color picker widgets for each part
+hair_color_name, hair_color_hex = st.sidebar.selectbox("Select Hair Color", color_options['hair'], format_func=lambda x: x[0])
+lip_color_name, lip_color_hex = st.sidebar.selectbox("Select Lip Color", color_options['lip'], format_func=lambda x: x[0])
+eyebrow_color_name, eyebrow_color_hex = st.sidebar.selectbox("Select Eyebrow Color", color_options['eyebrow'], format_func=lambda x: x[0])
+nose_face_neck_color_name, nose_face_neck_color_hex = st.sidebar.selectbox("Select Nose, Face, and Neck Color", color_options['nose_face_neck'], format_func=lambda x: x[0])
 
 # Saturation adjustments
 hair_saturation = st.sidebar.slider("Hair Saturation", 0.5, 2.0, 1.0)
 lip_saturation = st.sidebar.slider("Lip Saturation", 0.5, 2.0, 1.0)
 eyebrow_saturation = st.sidebar.slider("Eyebrow Saturation", 0.5, 2.0, 1.0)
 nose_face_neck_saturation = st.sidebar.slider("Nose, Face, and Neck Saturation", 0.5, 2.0, 1.0)
+
+# Convert color codes to RGB format
+hair_color = ImageColor.getcolor(hair_color_hex, "RGB")
+lip_color = ImageColor.getcolor(lip_color_hex, "RGB")
+eyebrow_color = ImageColor.getcolor(eyebrow_color_hex, "RGB")
+nose_face_neck_color = ImageColor.getcolor(nose_face_neck_color_hex, "RGB")
 
 # Assigning colors and saturation to parts
 colors = [
@@ -144,4 +160,4 @@ with col2:
     st.image(styled_image, use_column_width=True)
 
 # Footer
-st.markdown('<footer style="text-align: center; margin-top: 20px; font-size: 14px; color: #555;">Created with ❤️ by [Your Name]</footer>', unsafe_allow_html=True)
+st.markdown('<footer style="text-align: center; margin-top: 20px; font-size: 14px; color: #555;">Created with ❤️ by GUJJAR</footer>', unsafe_allow_html=True)
