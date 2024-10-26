@@ -7,3 +7,5 @@ pyyaml
 scikit-image
 Pillow
 torch 
+torch    # Include PyTorch
+torchvision 
