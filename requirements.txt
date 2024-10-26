@@ -4,3 +4,6 @@ scikit-image
 streamlit
 pillow
 pyyaml
+scikit-image
+Pillow
+torch 
