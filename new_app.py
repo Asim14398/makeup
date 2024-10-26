@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 from skimage.filters import gaussian
 from test import evaluate
@@ -89,8 +88,6 @@ table = {
     'left_eyebrow': 2,
     'right_eyebrow': 3,
     'nose_face_neck': [10, 1, 14],  # Grouped parts for face
-    'blush': [5, 6],  # Assuming left and right cheeks
-    'foundation': [1, 10, 14]  # Whole face and neck
 }
 
 # Suitable colors for each part (using color names)
@@ -118,15 +115,6 @@ color_options = {
         ('Caramel', '#AA7D4D'), ('Deep Tan', '#7A4B35'), ('Mocha', '#4E3B31'),
         ('Espresso', '#3B2A24') 
     ],
-    'blush': [
-        ('Soft Pink', '#FFC0CB'), ('Peach', '#FFE5B4'), ('Rosy Red', '#FF6347'),
-        ('Mauve', '#D8BFD8'), ('Deep Rose', '#C71585')
-    ],
-    'foundation': [
-        ('Porcelain', '#FBE7D8'), ('Fair', '#F0D6C6'), ('Light Beige', '#E2B5A8'),
-        ('Medium Beige', '#D1A57C'), ('Olive', '#BDA56D'), ('Tan', '#C89D68'),
-        ('Caramel', '#AA7D4D')
-    ]
 }
 
 # Image upload option
@@ -153,30 +141,31 @@ hair_color_name, hair_color_hex = st.sidebar.selectbox("Select Hair Color", colo
 lip_color_name, lip_color_hex = st.sidebar.selectbox("Select Lip Color", color_options['lip'], format_func=lambda x: x[0])
 eyebrow_color_name, eyebrow_color_hex = st.sidebar.selectbox("Select Eyebrow Color", color_options['eyebrow'], format_func=lambda x: x[0])
 nose_face_neck_color_name, nose_face_neck_color_hex = st.sidebar.selectbox("Select Nose, Face, and Neck Color", color_options['nose_face_neck'], format_func=lambda x: x[0])
-blush_color_name, blush_color_hex = st.sidebar.selectbox("Select Blush Color", color_options['blush'], format_func=lambda x: x[0])
-foundation_color_name, foundation_color_hex = st.sidebar.selectbox("Select Foundation Color", color_options['foundation'], format_func=lambda x: x[0])
 
 # Saturation adjustments
 hair_saturation = st.sidebar.slider("Hair Saturation", 0.5, 2.0, 1.0)
 lip_saturation = st.sidebar.slider("Lip Saturation", 0.5, 2.0, 1.0)
 eyebrow_saturation = st.sidebar.slider("Eyebrow Saturation", 0.5, 2.0, 1.0)
 nose_face_neck_saturation = st.sidebar.slider("Nose, Face, and Neck Saturation", 0.5, 2.0, 1.0)
-blush_saturation = st.sidebar.slider("Blush Saturation", 0.5, 2.0, 1.0)
-foundation_saturation = st.sidebar.slider("Foundation Saturation", 0.5, 2.0, 1.0)
 
 # Convert color codes to RGB format
 hair_color = ImageColor.getcolor(hair_color_hex, "RGB")
 lip_color = ImageColor.getcolor(lip_color_hex, "RGB")
 eyebrow_color = ImageColor.getcolor(eyebrow_color_hex, "RGB")
 nose_face_neck_color = ImageColor.getcolor(nose_face_neck_color_hex, "RGB")
-blush_color = ImageColor.getcolor(blush_color_hex, "RGB")
-foundation_color = ImageColor.getcolor(foundation_color_hex, "RGB")
 
-# Colors and saturation values
-colors = [hair_color, lip_color, lip_color, eyebrow_color, eyebrow_color, nose_face_neck_color, blush_color, foundation_color]
-saturation = [hair_saturation, lip_saturation, lip_saturation, eyebrow_saturation, eyebrow_saturation, nose_face_neck_saturation, blush_saturation, foundation_saturation]
+# Assigning colors and saturation to parts
+colors = [
+    hair_color, lip_color, lip_color, eyebrow_color,
+    eyebrow_color, nose_face_neck_color
+]
 
-# Apply the colors for each part
+saturation = [
+    hair_saturation, lip_saturation, lip_saturation, eyebrow_saturation,
+    eyebrow_saturation, nose_face_neck_saturation
+]
+
+# Applying makeup changes
 for part, color, saturate in zip(table.values(), colors, saturation):
     if isinstance(part, list):
         for p in part:
@@ -184,5 +173,7 @@ for part, color, saturate in zip(table.values(), colors, saturation):
     else:
         image = apply_clothing(image, parsing, part, color, saturate)
 
-# Display the final image
-st.image(image, caption="Styled Image with Blush and Foundation", use_column_width=True)
+# Display the final output
+st.image(image, caption="Styled Image", use_column_width=True)
+
+st.markdown("<footer>Developed with ❤️ in Streamlit</footer>", unsafe_allow_html=True) 
